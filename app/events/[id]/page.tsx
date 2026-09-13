@@ -1,9 +1,10 @@
 import { supabase } from "@/app/lib/supabase";
 import { notFound } from "next/navigation";
-import { MapPin, Calendar, Users, Trophy, ChevronLeft, ShieldCheck, MessageCircle } from "lucide-react";
+import { MapPin, Calendar, Users, Trophy, ChevronLeft, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { JoinGameButton } from "@/components/JoinGameButton";
+import { FeedbackSection } from "@/components/FeedbackSection";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -114,25 +115,11 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold">Players ({joinedCount})</h3>
             </div>
-            <div className="space-y-3">
-              {participants.filter((p: any) => p.status === 'joined').map((p: any) => (
-                <div key={p.user_id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors group">
-                  <Link href={`/profiles/${p.user_id}`} className="flex items-center gap-3 flex-1">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={p.profiles?.profile_photo_url} />
-                      <AvatarFallback>{p.profiles?.full_name?.charAt(0) || "U"}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium">{p.profiles?.full_name}</span>
-                  </Link>
-                  <Link href={`/messages/${p.user_id}`} className="p-2 bg-primary/10 text-primary rounded-full hover:bg-primary hover:text-primary-foreground transition-colors opacity-0 group-hover:opacity-100">
-                    <MessageCircle className="w-4 h-4" />
-                  </Link>
-                </div>
-              ))}
-              {joinedCount === 0 && (
-                <p className="text-sm text-muted-foreground italic text-center py-4">No players joined yet</p>
-              )}
-            </div>
+            <FeedbackSection
+              eventId={event.id}
+              eventDate={event.event_date}
+              participants={participants}
+            />
           </div>
         </div>
       </div>
