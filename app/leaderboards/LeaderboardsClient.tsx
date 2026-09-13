@@ -245,7 +245,7 @@ export default function LeaderboardsClient({ sports }: { sports: any[] }) {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center py-20">
+        <div className="flex justify-center items-center py-10">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : (

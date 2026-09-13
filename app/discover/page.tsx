@@ -16,6 +16,7 @@ export default async function DiscoverPage({
   const reliability = (resolvedParams.reliability as string) || "";
   const time = (resolvedParams.time as string) || "";
   const coach = (resolvedParams.coach as string) || "";
+  const age = (resolvedParams.age as string) || "";
 
   // 1. Fetch Sports for filter dropdown
   const { data: sports } = await supabase.from("sports").select("*").order("name");
@@ -74,6 +75,17 @@ export default async function DiscoverPage({
   if (coach === "true") {
     athletesQuery = athletesQuery.eq("is_coach", true);
   }
+  if (age && age !== "all") {
+    if (age === "18-25") {
+      athletesQuery = athletesQuery.gte("age", 18).lte("age", 25);
+    } else if (age === "26-35") {
+      athletesQuery = athletesQuery.gte("age", 26).lte("age", 35);
+    } else if (age === "36-50") {
+      athletesQuery = athletesQuery.gte("age", 36).lte("age", 50);
+    } else if (age === "50+") {
+      athletesQuery = athletesQuery.gte("age", 50);
+    }
+  }
   
   const { data: rawAthletes } = await athletesQuery;
   
@@ -93,7 +105,7 @@ export default async function DiscoverPage({
           initialEvents={events || []} 
           initialAthletes={athletes} 
           sports={sports || []} 
-          searchParams={{ query, sportId, city, coach }}
+          searchParams={{ query, sportId, city, coach, age }}
         />
       </div>
     </div>

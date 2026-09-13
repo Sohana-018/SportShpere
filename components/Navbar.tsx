@@ -121,6 +121,9 @@ export default function Navbar() {
                   </span>
                 )}
               </Link>
+              <Link href="/my-games" className={buttonVariants({ variant: "ghost", className: "hidden lg:flex gap-2" })}>
+                <Trophy className="w-4 h-4" /> My Games
+              </Link>
               <Link href="/profile" className={buttonVariants({ variant: "ghost", className: "gap-2" })}>
                 <User className="w-4 h-4" /> My Profile
               </Link>

@@ -6,6 +6,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { JoinGameButton } from "@/components/JoinGameButton";
 import { FeedbackSection } from "@/components/FeedbackSection";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EditGameButton } from "@/components/EditGameButton";
 import { format } from "date-fns";
 import Link from "next/link";
 
@@ -33,15 +34,20 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
   if (error || !event) {
     notFound();
   }
+  
+  const { data: sports } = await supabase.from("sports").select("*").order("name");
 
   const participants = event.event_participants || [];
   const joinedCount = participants.filter((p: any) => p.status === 'joined').length;
 
   return (
     <div className="container mx-auto px-4 py-8 animate-in fade-in duration-500">
-      <Link href="/discover" className={buttonVariants({ variant: "ghost", className: "mb-6" })}>
-        <ChevronLeft className="w-4 h-4 mr-2" /> Back to Discover
-      </Link>
+      <div className="flex justify-between items-center mb-6">
+        <Link href="/discover" className={buttonVariants({ variant: "ghost" })}>
+          <ChevronLeft className="w-4 h-4 mr-2" /> Back to Discover
+        </Link>
+        <EditGameButton event={event} sports={sports || []} />
+      </div>
 
       <div className="grid md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-8">

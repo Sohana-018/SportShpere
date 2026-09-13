@@ -84,7 +84,9 @@ export function ManageSports({ userSports, allSports, userId, onSuccess }: Manag
             <Label>Sport</Label>
             <Select value={selectedSport} onValueChange={setSelectedSport}>
               <SelectTrigger className="bg-background/50 border-white/10">
-                <SelectValue placeholder="Select a sport" />
+                <SelectValue placeholder="Select a sport">
+                  {allSports.find(s => s.id === selectedSport)?.name}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {allSports.map(s => (

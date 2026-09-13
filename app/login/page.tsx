@@ -14,6 +14,7 @@ import { InteractiveMascot } from "@/components/InteractiveMascot";
 function LoginContent() {
   const searchParams = useSearchParams();
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "login";
+  const sportId = searchParams.get("sport");
   
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [email, setEmail] = useState("");
@@ -42,6 +43,15 @@ function LoginContent() {
         });
         
         if (error) throw error;
+        
+        // If a sport was passed via AI Matchmaker, save it as an interest
+        if (sportId && data.user) {
+          await supabase.from("athlete_sports").insert({
+            user_id: data.user.id,
+            sport_id: sportId,
+            skill_level: "Beginner"
+          });
+        }
         
         // Redirect to discover page on success
         window.location.href = "/discover";
@@ -79,7 +89,7 @@ function LoginContent() {
 
         <div className="relative z-10 flex flex-col items-center">
           <InteractiveMascot isBlindfolded={isPasswordFocused} />
-          <h2 className="mt-12 text-3xl font-black text-center max-w-md">
+          <h2 className="mt-6 text-3xl font-black text-center max-w-md">
             Join the ultimate sports networking platform
           </h2>
           <p className="mt-4 text-muted-foreground text-center max-w-sm">

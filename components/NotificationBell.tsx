@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/app/lib/supabase";
 import { Bell } from "lucide-react";
 import {
@@ -16,28 +16,46 @@ import { formatDistanceToNow } from "date-fns";
 export function NotificationBell() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  // Use a ref so cleanup is synchronous and doesn't race on StrictMode double-mount
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
-    fetchNotifications();
+    let isMounted = true;
 
-    let subscription: ReturnType<typeof supabase.channel> | null = null;
-
-    const setupSubscription = async () => {
+    const init = async () => {
       const { data: userData } = await supabase.auth.getUser();
-      if (!userData?.user) return;
+      if (!userData?.user || !isMounted) return;
 
-      // Build the channel with .on() BEFORE calling .subscribe()
-      subscription = supabase
-        .channel(`notif_bell_${userData.user.id}`)
+      const uid = userData.user.id;
+
+      // Fetch existing notifications
+      const { data } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", uid)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (data && isMounted) {
+        setNotifications(data);
+        setUnreadCount(data.filter((n: any) => !n.is_read).length);
+      }
+
+      // Build channel: .on() must come BEFORE .subscribe()
+      // Use a timestamp suffix to guarantee a fresh channel name on each mount
+      const channelName = `notif_bell_${uid}_${Date.now()}`;
+      channelRef.current = supabase
+        .channel(channelName)
         .on(
           "postgres_changes",
           {
             event: "INSERT",
             schema: "public",
             table: "notifications",
-            filter: `user_id=eq.${userData.user.id}`,
+            filter: `user_id=eq.${uid}`,
           },
           (payload: any) => {
+            if (!isMounted) return;
             setNotifications((prev) => [payload.new, ...prev]);
             setUnreadCount((prev) => prev + 1);
           }
@@ -45,31 +63,16 @@ export function NotificationBell() {
         .subscribe();
     };
 
-    setupSubscription();
+    init();
 
     return () => {
-      if (subscription) {
-        supabase.removeChannel(subscription);
+      isMounted = false;
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
       }
     };
   }, []);
-
-  const fetchNotifications = async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData?.user) return;
-
-    const { data } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", userData.user.id)
-      .order("created_at", { ascending: false })
-      .limit(10);
-
-    if (data) {
-      setNotifications(data);
-      setUnreadCount(data.filter((n: any) => !n.is_read).length);
-    }
-  };
 
   const markAllAsRead = async () => {
     if (unreadCount === 0) return;
@@ -89,18 +92,20 @@ export function NotificationBell() {
 
   return (
     <DropdownMenu onOpenChange={(open) => { if (open) markAllAsRead(); }}>
-      {/* Use a plain <button> here — NOT the shadcn <Button> — to avoid nested <button> elements */}
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className="relative inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <Bell className="w-5 h-5" />
-          {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
-          )}
-        </button>
+      {/*
+        Base UI's MenuPrimitive.Trigger already renders a <button>.
+        Do NOT use asChild + another <button> — that nests two <button> elements.
+        Just put content directly inside DropdownMenuTrigger and style it via className.
+      */}
+      <DropdownMenuTrigger
+        className="relative inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <Bell className="w-5 h-5" />
+        {unreadCount > 0 && (
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
+        )}
       </DropdownMenuTrigger>
+
       <DropdownMenuContent align="end" className="w-80 bg-card/95 backdrop-blur-md border-white/10">
         <DropdownMenuLabel>Notifications</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-white/10" />
@@ -128,4 +133,3 @@ export function NotificationBell() {
     </DropdownMenu>
   );
 }
-

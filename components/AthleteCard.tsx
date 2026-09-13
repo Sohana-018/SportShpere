@@ -2,7 +2,7 @@ import { User, MapPin, Trophy, ShieldCheck } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Button } from "./ui/button";
+import { buttonVariants } from "./ui/button";
 import Link from "next/link";
 
 interface AthleteCardProps {
@@ -68,9 +68,9 @@ export function AthleteCard({ athlete }: AthleteCardProps) {
       </CardContent>
       
       <CardFooter className="p-6 pt-0 mt-auto">
-        <Button className="w-full" variant="outline" asChild>
-          <Link href={`/profiles/${profile.id}`}>View Profile</Link>
-        </Button>
+        <Link href={`/profiles/${profile.id}`} className={buttonVariants({ variant: "outline", className: "w-full" })}>
+          View Profile
+        </Link>
       </CardFooter>
     </Card>
   );

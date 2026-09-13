@@ -20,17 +20,20 @@ interface DiscoverClientProps {
     query: string;
     sportId: string;
     city: string;
+    coach?: string;
+    age?: string;
   };
 }
 
 export default function DiscoverClient({ initialEvents, initialAthletes, sports, searchParams }: DiscoverClientProps) {
   const router = useRouter();
   const [query, setQuery] = useState(searchParams.query || "");
-  const [sportId, setSportId] = useState(searchParams.sportId || "all");
+  const [sportId, setSportId] = useState(searchParams.sportId || "");
   const [city, setCity] = useState(searchParams.city || "");
   const [minReliability, setMinReliability] = useState((searchParams as any).reliability || "");
   const [availabilityTime, setAvailabilityTime] = useState((searchParams as any).time || "");
   const [coachesOnly, setCoachesOnly] = useState((searchParams as any).coach === "true");
+  const [ageRange, setAgeRange] = useState((searchParams as any).age || "");
   
   const [isCreateGameOpen, setIsCreateGameOpen] = useState(false);
 
@@ -39,20 +42,22 @@ export default function DiscoverClient({ initialEvents, initialAthletes, sports,
     if (query) params.set("q", query);
     if (sportId && sportId !== "all") params.set("sport", sportId);
     if (city) params.set("city", city);
-    if (minReliability) params.set("reliability", minReliability);
+    if (minReliability && minReliability !== "all") params.set("reliability", minReliability);
     if (availabilityTime) params.set("time", availabilityTime);
     if (coachesOnly) params.set("coach", "true");
+    if (ageRange && ageRange !== "all") params.set("age", ageRange);
     
     router.push(`/discover?${params.toString()}`);
   };
 
   const clearFilters = () => {
     setQuery("");
-    setSportId("all");
+    setSportId("");
     setCity("");
     setMinReliability("");
     setAvailabilityTime("");
     setCoachesOnly(false);
+    setAgeRange("");
     router.push("/discover");
   };
 
@@ -80,7 +85,7 @@ export default function DiscoverClient({ initialEvents, initialAthletes, sports,
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
           </div>
-          <Select value={sportId || "all"} onValueChange={setSportId}>
+          <Select value={sportId || undefined} onValueChange={(val) => setSportId(val === "all" ? "" : val)}>
             <SelectTrigger className="w-full md:w-[200px] bg-background/50 border-white/10">
               <SelectValue placeholder="Any Sport" />
             </SelectTrigger>
@@ -104,7 +109,7 @@ export default function DiscoverClient({ initialEvents, initialAthletes, sports,
         </div>
         <div className="flex flex-col md:flex-row gap-4 items-center">
           <div className="flex-1 flex gap-4 w-full">
-            <Select value={minReliability || "all"} onValueChange={setMinReliability}>
+            <Select value={minReliability || undefined} onValueChange={(val) => setMinReliability(val === "all" ? "" : val)}>
               <SelectTrigger className="flex-1 bg-background/50 border-white/10">
                 <SelectValue placeholder="Min. Reliability" />
               </SelectTrigger>
@@ -114,6 +119,18 @@ export default function DiscoverClient({ initialEvents, initialAthletes, sports,
                 <SelectItem value="75">75% +</SelectItem>
                 <SelectItem value="90">90% +</SelectItem>
                 <SelectItem value="100">100%</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={ageRange || undefined} onValueChange={(val) => setAgeRange(val === "all" ? "" : val)}>
+              <SelectTrigger className="flex-1 bg-background/50 border-white/10">
+                <SelectValue placeholder="Age Range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any Age</SelectItem>
+                <SelectItem value="18-25">18-25</SelectItem>
+                <SelectItem value="26-35">26-35</SelectItem>
+                <SelectItem value="36-50">36-50</SelectItem>
+                <SelectItem value="50+">50+</SelectItem>
               </SelectContent>
             </Select>
             <Input 
@@ -136,7 +153,7 @@ export default function DiscoverClient({ initialEvents, initialAthletes, sports,
           </div>
           <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
             <Button onClick={handleSearch} className="flex-1 md:px-8">Search</Button>
-            {(query || sportId || city || minReliability || availabilityTime || coachesOnly) && (
+            {(query || sportId || city || minReliability || availabilityTime || coachesOnly || (ageRange && ageRange !== "all")) && (
               <Button variant="ghost" size="icon" onClick={clearFilters} title="Clear filters">
                 <FilterX className="w-4 h-4" />
               </Button>
