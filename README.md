@@ -1,37 +1,50 @@
 # SportSphere
 
-SportSphere is a unified sports networking and discovery platform designed to handle multiple, vastly different sports gracefully without becoming cluttered.
+SportSphere is a unified sports networking and discovery platform where athletes across any sport — cricket, football, swimming, chess, badminton, and more — can build a profile, get discovered, find matches, and connect with other athletes and coaches.
+
+## Tech Stack
+- Frontend: Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui
+- Backend: Supabase (Postgres, Auth, Realtime)
+- Deployment: Vercel
 
 ## How We Handle Multiple, Very Different Sports
-SportSphere uses a flexible, relational data structure. Instead of hardcoding fields for specific sports, we separate core user identity from sport-specific profiles. An athlete can add multiple sports to their profile (e.g., Basketball, Chess, Swimming) via an `athlete_sports` relationship, defining their individual skill level for each. 
 
-Furthermore, the **Performance Tracker** uses a generic key-value `performance_records` system. Instead of rigid columns like "lap_time" or "chess_rating", users define a `metric_name` and `metric_value` linked to a specific sport ID. This means the app effortlessly adapts: a swimmer can log "50m Freestyle Time: 28s", while a chess player logs "ELO Rating: 1500" using the exact same underlying architecture.
+SportSphere uses a flexible, relational data structure instead of hardcoding fields per sport. Core identity (profiles) is separated from sport-specific data: an athlete links to any number of sports via athlete_sports, each with its own skill level.
+
+The Performance Tracker goes further with a generic key-value system (performance_records): rather than rigid columns like lap_time or chess_rating, users log a metric_name and metric_value tied to a sport. A swimmer logs "50m Freestyle: 28s," a chess player logs "ELO Rating: 1500" — same underlying table, no schema changes needed per sport.
+
+Trust and reliability work the same way across sports: after any event, participants rate each other (punctuality, sportsmanship, fair play, performance) via game_feedback, which automatically recalculates each athlete's reliability_score — a single trust signal that works whether the event was a cricket match or a chess meetup.
 
 ## Features
 
-### Must-Have Features
-* **Athlete Profile**: Users can manage their bio, city, and list the sports they play along with their skill levels.
-* **Discovery & Search**: Athletes and upcoming events are easily discoverable. You can filter by sport, city, reliability score, and even time availability.
-* **Events & Matches**: Create local pickup games, practices, or tournaments. Other users can join these events with a click.
-* **Direct Messaging**: Once athletes find each other (via Discovery or Event participant lists), they can directly message each other using the in-app chat.
-* **Unified Profile Architecture**: (See explanation above)
+- Athlete Profiles — bio, city/area, and sports played with skill badges (Beginner / Intermediate / Pro)
+- Discovery and Search — find athletes and events, filterable by sport, city, availability, and reliability score
+- Events and Matches — create or join local pickup games, practices, and tournaments
+- Direct Messaging — realtime 1:1 chat, unlocked once athletes connect through discovery or a shared event
+- Reliability System — after an event, participants rate each other on punctuality, sportsmanship, fair play, and performance, which automatically updates each athlete's trust score
+- Performance Tracker — sport-agnostic metric logging with a personal history view
+- Leaderboards — ranked by reliability score or by a specific performance metric, filterable by sport and city
+- Coach/Mentor Matching — coaches can be discovered and filtered separately from athlete-to-athlete matches
+- Community Feed — a global feed for posting updates and achievements
+- Notifications — automatic alerts when a new event is created nearby
 
-### Bonus Features Included
-* **Dynamic Performance Tracker**: A specialized tracker on the profile page that adapts to the sport selected, allowing users to log custom metrics and see their history.
-* **Leaderboards**: Dedicated leaderboards for both Reliability (platform trust) and Performance (best recorded metrics per sport).
+Planned: accessibility support for para-athletes (dedicated pass planned after core features are finalized).
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repo and install dependencies:
 
-```bash
+npm install
+
+2. Create a .env.local file in the project root with your Supabase project credentials:
+
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_publishable_key
+
+(Find these in your Supabase dashboard under Project Settings → API.)
+
+3. Run the development server:
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open http://localhost:3000 in your browser.
